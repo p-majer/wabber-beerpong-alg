@@ -88,5 +88,5 @@ def matchmaker(iterations, n_tables, n_teams, existing_struct = {}, max_timeslot
     return(best_struct)
 
 # examples for your pleasure
-# old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
-# matchmaker(100, 4, 20, old_game)
+old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
+print(matchmaker(100, 4, 20, old_game))
