@@ -5,7 +5,14 @@ import random
 import itertools
 
 def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots=1000):
-
+    """
+    Generates a random schedule for beerpong matches where all teams play each other.
+    
+    n_tables: number of tables available per timeslot
+    n_teams: number of teams in the tournament
+    existing_struct: existing structure to build on (dict of timeslot: list of matches)
+    max_timeslots: maximum number of timeslots to consider
+    """
     all_matches = set(itertools.combinations(range(1, n_teams + 1), 2))
     # makes unique pairs of teams.
     # needs to be a set to enable import of old game 
@@ -71,6 +78,7 @@ def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots=100
     return struct
 
 def matchmaker(iterations, n_tables, n_teams, existing_struct = {}, max_timeslots=1000):
+    """Runs simple_matchmaker() a million times and picks coolest one."""
     best_struct = simple_matchmaker(n_tables, n_teams, existing_struct, max_timeslots)
 
     for _ in range(iterations-1):
