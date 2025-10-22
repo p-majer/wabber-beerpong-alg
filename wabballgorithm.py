@@ -78,7 +78,8 @@ def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots=100
     return struct
 
 def matchmaker(iterations, n_tables, n_teams, existing_struct = {}, max_timeslots=1000):
-    """Runs simple_matchmaker() a million times and picks coolest one."""
+    """Runs simple_matchmaker() a million times and picks the schedule
+        that takes the fewest rounds to complete."""
     best_struct = simple_matchmaker(n_tables, n_teams, existing_struct, max_timeslots)
 
     for _ in range(iterations-1):
@@ -87,6 +88,10 @@ def matchmaker(iterations, n_tables, n_teams, existing_struct = {}, max_timeslot
             best_struct = dict(attempt)
     return(best_struct)
 
+# TODO implement threading.
+# TODO make GUI. This needs threading otherwise it may freeze.
+# TODO implement readable output system
+
 # examples for your pleasure
-old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
-print(matchmaker(100, 4, 20, old_game))
+# old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
+# matchmaker(100, 4, 20, old_game)
