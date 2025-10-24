@@ -3,8 +3,9 @@
 
 import random
 import itertools
+from math import comb
 
-def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots=1000):
+def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots= None):
     """
     Generates a random schedule for beerpong matches where all teams play each other.
     
@@ -13,6 +14,11 @@ def simple_matchmaker(n_tables, n_teams, existing_struct = {}, max_timeslots=100
     existing_struct: existing structure to build on (dict of timeslot: list of matches)
     max_timeslots: maximum number of timeslots to consider
     """
+    if max_timeslots is None:
+        if existing_struct == {} or existing_struct == None:
+            max_timeslots = (comb(n_teams, n_tables)/4) + 100
+        else:
+            max_timeslots = comb(n_teams, n_tables)
     all_matches = set(itertools.combinations(range(1, n_teams + 1), 2))
     # makes unique pairs of teams.
     # needs to be a set to enable import of old game 
@@ -93,5 +99,5 @@ def matchmaker(iterations, n_tables, n_teams, existing_struct = {}, max_timeslot
 # TODO implement readable output system
 
 # examples for your pleasure
-# old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
-# matchmaker(100, 4, 20, old_game)
+old_game = {1: [(7, 8), (5, 12), (1, 11), (3, 6)], 2: [(4, 12), (3, 10), (6, 9), (7, 11)], 3: [(2, 12), (3, 9), (1, 4), (6, 7)]}
+matchmaker(100, 4, 20, old_game)
