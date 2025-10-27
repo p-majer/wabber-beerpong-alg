@@ -1,6 +1,8 @@
-# Log files for some garbage are currently .txt for accessibility.
+# Log files  are currently .txt format.
 *.txt
 
+# test dictionary for garbo the code makes
+test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

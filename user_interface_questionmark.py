@@ -11,6 +11,16 @@ def browseFiles():
                                                         "*.txt*"),
                                                        ("all files",
                                                         "*.*")))
+    return filename
+
+def read_utf8(file):
+    with open(file , "r", encoding="utf-8") as f:
+        return f.read()
+
+def write_utf8(file , to_write):
+    with open(file , "w", encoding="utf-8") as f:
+        f.write(to_write)
+
 
 def run_gui():
     root = tk.Tk()
