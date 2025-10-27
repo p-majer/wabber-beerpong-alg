@@ -1,8 +1,16 @@
-
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
 from wabballgorithm import matchmaker
 import ast
+
+# Function for opening the 
+# file explorer window
+def browseFiles():
+    filename = tk.filedialog.askopenfilename(initialdir = "/",
+                                          title = "Select a File",
+                                          filetypes = (("Text files",
+                                                        "*.txt*"),
+                                                       ("all files",
+                                                        "*.*")))
 
 def run_gui():
     root = tk.Tk()
@@ -32,7 +40,7 @@ def run_gui():
     teams_entry.pack()
     teams_entry.insert(0, "12")
 
-    log_box = scrolledtext.ScrolledText(left_frame, width=50, height=20)
+    log_box = tk.scrolledtext.ScrolledText(left_frame, width=50, height=20)
     log_box.pack(pady=10)
 
     # --- Right Frame for Results Input (Scrollable) ---
@@ -71,10 +79,10 @@ def run_gui():
                     continue  # skip empty
                 scores[match]["winner"] = int(winner)
                 scores[match]["loser"] = int(loser)
-            messagebox.showinfo("Saved", "All match results saved successfully!")
+            tk.messagebox.showinfo("Saved", "All match results saved successfully!")
             print("Saved Scores:", {k: {"winner": v["winner"], "loser": v["loser"]} for k, v in scores.items()})
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to save results:\n{e}")
+            tk.messagebox.showerror("Error", f"Failed to save results:\n{e}")
 
     def generate():
         # Clear previous fields
@@ -116,9 +124,9 @@ def run_gui():
                     row += 1
 
             log_box.insert(tk.END, "\n---\n")
-            # messagebox.showinfo("Done", "Schedules generated and input fields created!")
+            # tk.messagebox.showinfo("Done", "Schedules generated and input fields created!")
         except Exception as e:
-            messagebox.showerror("Error", str(e))
+            tk.messagebox.showerror("Error", str(e))
 
     tk.Button(left_frame, text="Generate Schedule", command=generate).pack(pady=10)
     tk.Button(right_frame, text="Save Results", command=save_results).pack(pady=10)
