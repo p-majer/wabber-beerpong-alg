@@ -1,9 +1,13 @@
 import tkinter as tk
+from tkinter import filedialog, messagebox, scrolledtext
+# you just have to do this tkinter is rly fucked up
 from wabballgorithm import matchmaker
 import ast
 
-# Function for opening the 
-# file explorer window
+
+# OH MY FUCKING GOD THIS CODE SUCKS SO BAD
+
+# Function for opening the file explorer window
 def browseFiles():
     filename = tk.filedialog.askopenfilename(initialdir = "/",
                                           title = "Select a File",
@@ -34,11 +38,35 @@ def run_gui():
     right_frame = tk.Frame(root)
     right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    # --- Left Frame ---
-    tk.Label(left_frame, text="Previous matches (as dict):").pack()
-    prev_entry = tk.Entry(left_frame, width=50)
-    prev_entry.pack()
-    prev_entry.insert(0, "{}")
+    # Frame for file selection
+    file_frame = tk.Frame(left_frame)
+    file_frame.pack(fill="x", pady=5)
+
+    filename_var = tk.StringVar()
+    filename_entry = tk.Entry(file_frame, textvariable=filename_var, width=40)
+    filename_entry.pack(side="left", padx=5, fill="x", expand=True)
+
+    # Placeholder for the data field
+    tk.Label(left_frame, text="File Contents (as dict):").pack()
+    prev_data_entry = tk.Text(left_frame, width=50, height=5)
+    prev_data_entry.pack()
+    prev_data_entry.insert(tk.END, "{}")
+
+    def load_file():
+        filename = browseFiles()
+        if filename:
+            filename_var.set(filename)
+            try:
+                file_content = read_utf8(filename)
+                prev_data_entry.delete(1.0, tk.END)
+                prev_data_entry.insert(tk.END, file_content)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to read file:\n{e}")
+
+    tk.Button(file_frame, text="Browse", command=load_file).pack(side="left", padx=5)
+
+# I have a first GUI that covers all this ^^
+
 
     tk.Label(left_frame, text="Number of Tables:").pack()
     tables_entry = tk.Entry(left_frame)
@@ -102,7 +130,7 @@ def run_gui():
         try:
             n_tables = int(tables_entry.get())
             n_teams = int(teams_entry.get())
-            existing_struct = ast.literal_eval(prev_entry.get())
+            existing_struct = ast.literal_eval(prev_data_entry.get())
 
             best = matchmaker(100, n_tables, n_teams, existing_struct)
             log_box.insert(tk.END, "Best Schedule:\n")
