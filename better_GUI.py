@@ -67,16 +67,15 @@ def gui_one():
         if checkstarterlog(prev_data_entry.get("1.0", tk.END)):
             running_log = ast.literal_eval(prev_data_entry.get("1.0", tk.END).strip())
             oldlog = True
-        print(running_log) #\\\\\\\\
+        print(running_log)
         root.destroy()
+        gui_two()
 
     tk.Button(root, text="Next", command=close_and_return).pack(pady=10)
 
     root.mainloop()
 
-    gui_two(running_log)  # return after window closes
-
-def gui_two(log):
+def gui_two():
     existing_struct = running_log["schedule"]
 
     root = tk.Tk()
@@ -105,7 +104,7 @@ def gui_two(log):
     # Keep references to the per-team Entry widgets
     team_entries = {}
 
-    def update_team_entries(event=None):
+    def update_team_entries(bullshit = None): # don't work without the bullshit
         # create or remove entries to match the requested number
         try:
             n = int(teams_entry.get())
@@ -126,9 +125,9 @@ def gui_two(log):
                 lbl = tk.Label(teams_frame, text=f"Team {i} name:")
                 lbl.pack(anchor="w", padx=5, pady=2)
                 ent = tk.Entry(teams_frame, width=30)
-                ent.pack(padx=5, pady=(0,6))
+                ent.pack(padx=5, pady=(0,2))
                 # prefill from running_log if present
-                saved = running_log.get("teams", {}).get(i, ['', []])[0]
+                saved = running_log.get("teams", {}).get(i, ['', 0])[0]
                 if isinstance(saved, str) and saved:
                     ent.insert(0, saved)
                 team_entries[i] = {'label': lbl, 'entry': ent}
@@ -144,7 +143,7 @@ def gui_two(log):
             name = widgets['entry'].get().strip()
             # ensure the key exists
             if i not in running_log["teams"]:
-                running_log["teams"][i] = ['', []]
+                running_log["teams"][i] = ['', 0]
             running_log["teams"][i][0] = name if name else f"Team {i}"
 
     def generate():
@@ -171,37 +170,116 @@ def gui_two(log):
         read_team_names_into_running_log()
         print("final running_log:", running_log)
         root.destroy()
+        gui_three()
 
     tk.Button(left_frame, text="Next (wahoo)", command=close_and_return).pack(pady=10)
 
     root.mainloop()
 
-    gui_three(running_log.get("schedule"))
-
-
-def gui_three(schedule):
-    if running_log["schedule"] == None:
-        raise ValueError('No schedule provided')
-    
+def gui_three():
     root = tk.Tk()
-    root.title("Wabber Matchmaker - Score tournament")
-    root.geometry("600x600")
-    
-    # I still need to adapt the scoring thing to this, it's going to be crazy. 
-    # Also still needs to keep saving the log to a file in case of some dumbass closing the window.
-    # But then maybe it will work!! And you can score it!! and have it be constantly updating a log file!!
-    # and oh the scoring screen needs a button thet can based on the log file open gui 2 again and set more matches up
-    # But then it might finally work!!!!!!!!!!!!!!!!  
+    root.title("Wabber Matchmaker - Score Tournament")
+    root.geometry("900x700")
 
+    global running_log
+
+    current_slot = tk.IntVar(value=1)
+    score_entries = {}
+
+    # --- Frames ---
+    control_frame = tk.Frame(root)
+    control_frame.pack(side=tk.TOP, fill=tk.X, pady=10)
+
+    matches_frame = tk.Frame(root)
+    matches_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    # --- Controls ---
+    tk.Label(control_frame, text="Current Slot:").pack(side=tk.LEFT, padx=5)
+    slot_spin = tk.Spinbox(control_frame, from_=1, to=len(running_log['schedule']), width=5, textvariable=current_slot)
+    slot_spin.pack(side=tk.LEFT, padx=5)
+
+    def refresh_matches():
+        """Show matches for the selected slot and prefill scores from running_log"""
+        for widget in matches_frame.winfo_children():
+            widget.destroy()
+        score_entries.clear()
+
+        slot = current_slot.get()
+        matches = running_log['schedule'].get(slot, [])
+
+        tk.Label(matches_frame, text=f"Slot {slot} matches", font=("Arial", 14, "bold")).pack(pady=5)
+
+        for match_index, match_data in enumerate(matches):
+            if not isinstance(match_data, list) or len(match_data) < 3:
+                continue
+
+            (team1_id, team2_id), scored_flag, scores = match_data
+            scored = scored_flag[0]
+
+            match_frame = tk.Frame(matches_frame)
+            match_frame.pack(fill=tk.X, pady=5)
+
+            team1_name = running_log["teams"].get(team1_id, ["Unknown", 0])[0]
+            team2_name = running_log["teams"].get(team2_id, ["Unknown", 0])[0]
+
+            tk.Label(match_frame, text=f"{team1_name}", width=20, anchor="e").pack(side=tk.LEFT)
+            entry1 = tk.Entry(match_frame, width=5)
+            entry1.pack(side=tk.LEFT, padx=5)
+            tk.Label(match_frame, text="vs").pack(side=tk.LEFT)
+            entry2 = tk.Entry(match_frame, width=5)
+            entry2.pack(side=tk.LEFT, padx=5)
+            tk.Label(match_frame, text=f"{team2_name}", width=20, anchor="w").pack(side=tk.LEFT)
+
+            # Load current scores directly from running_log
+            entry1.insert(0, str(running_log['schedule'][slot][match_index][2].get(0, 0)))
+            entry2.insert(0, str(running_log['schedule'][slot][match_index][2].get(1, 0)))
+
+            # Disable entries if match already scored
+            if scored:
+                entry1.config(state='disabled')
+                entry2.config(state='disabled')
+
+            score_entries[(slot, match_index)] = (entry1, entry2)
+            print(running_log)
+
+    def save_scores():
+        """Save scores directly into running_log and mark as scored"""
+        for (slot, match_index), (entry1, entry2) in score_entries.items():
+            match_data = running_log['schedule'][slot][match_index]
+            (team1_id, team2_id), scored_flag, scores = match_data
+
+            if scored_flag[0]:  # already scored
+                continue
+
+            try:
+                s1 = int(entry1.get().strip() or 0)
+                s2 = int(entry2.get().strip() or 0)
+            except ValueError:
+                continue
+
+            # Write scores directly into running_log
+            running_log['schedule'][slot][match_index][2][0] = s1
+            running_log['schedule'][slot][match_index][2][1] = s2
+
+            # Mark match as scored
+            running_log['schedule'][slot][match_index][1][0] = True
+            print(running_log)
+
+        refresh_matches()
+
+    def back_to_setup():
+        root.destroy()
+        gui_two()
+
+    tk.Button(control_frame, text="Refresh Slot", command=refresh_matches).pack(side=tk.LEFT, padx=10)
+    tk.Button(control_frame, text="Save Scores", command=save_scores).pack(side=tk.LEFT, padx=10)
+    tk.Button(control_frame, text="Back to Setup", command=back_to_setup).pack(side=tk.RIGHT, padx=10)
+
+    refresh_matches()
+    root.mainloop()
 
 gui_one()
 
-
-
-
-
-
-
-
-
-
+# We still have sopme problems with the ui using old logs.
+# This whole fucking garbage thing needs rehauling  or at least needs to be fucking understandable.
+# I need some rest i been cookig for like 8 hours
